@@ -549,11 +549,16 @@ func nodeType(interp *Interpreter, sc *scope, n *node) (*itype, error) {
 			// n.anc.child[0] is a variable, but it seems at this point in the run we have no
 			// way of knowing that yet (typ is nil, so there's no typ.cat yet).
 			n.anc.child[0].kind == identExpr {
-			for {
-				if localScope.level == 0 {
-					break
+			// But in some cases, we do have acces to typ.
+			// If so, use it to make sure that we are a selector on a binPkgT
+			if n.anc.child[0].typ == nil ||
+				(n.anc.child[0].typ != nil && n.anc.child[0].typ.cat == binPkgT) {
+				for {
+					if localScope.level == 0 {
+						break
+					}
+					localScope = localScope.anc
 				}
-				localScope = localScope.anc
 			}
 		}
 
